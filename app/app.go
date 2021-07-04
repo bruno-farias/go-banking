@@ -13,11 +13,15 @@ import (
 func Start() {
 	router := mux.NewRouter()
 	// wiring
-	//ch := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryStub())}
-	ch := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryDb())}
+	dbClient := helper.GetDbClient()
+	customerRepositoryDb := domain.NewCustomerRepositoryDb(dbClient)
+	accountRepositoryDb := domain.NewAccountRepositoryDb(dbClient)
+	ch := CustomerHandlers{service.NewCustomerService(customerRepositoryDb)}
+	ah := AccountHandler{service.NewAccountService(accountRepositoryDb)}
 	// routes
 	router.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)
 	router.HandleFunc("/customers/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet)
+	router.HandleFunc("/customers/{customer_id:[0-9]+}/account", ah.NewAccount).Methods(http.MethodPost)
 
 	hostname := helper.GetEnvVariable("SERVER_HOST")
 	port := helper.GetEnvVariable("SERVER_PORT")
