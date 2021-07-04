@@ -2,8 +2,10 @@ package domain
 
 import (
 	"banking/errs"
+	"banking/helper"
 	"banking/logger"
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"time"
@@ -50,7 +52,15 @@ func (d CustomerRepositoryDb) ById(id string) (*Customer, *errs.AppError) {
 }
 
 func NewCustomerRepositoryDb() CustomerRepositoryDb {
-	client, err := sqlx.Open("mysql", "root:password@tcp(localhost:3306)/banking")
+	dbDriver := helper.GetEnvVariable("DB_DRIVER")
+	dbUser := helper.GetEnvVariable("DB_USER")
+	dbPassword := helper.GetEnvVariable("DB_PASSWORD")
+	dbHost := helper.GetEnvVariable("DB_HOST")
+	dbPort := helper.GetEnvVariable("DB_PORT")
+	dbDatabase := helper.GetEnvVariable("DB_DATABASE")
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbDatabase)
+
+	client, err := sqlx.Open(dbDriver, dataSourceName)
 	if err != nil {
 		panic(err)
 	}
